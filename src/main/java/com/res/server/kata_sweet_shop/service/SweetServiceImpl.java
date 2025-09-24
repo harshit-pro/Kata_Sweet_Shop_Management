@@ -65,13 +65,13 @@ public Sweet update(Long id, SweetRequest request) {
 
     @Override
     @Transactional
-    public void purchase(Long id, int qty) {
-//        Sweet s = sweetRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Sweet not found"));
-//        if (s.getQuantity() < qty) {
-//            throw new InsufficientStockException("Insufficient quantity");
-//        }
-//        s.setQuantity(s.getQuantity() - qty);
-//        sweetRepository.save(s);
+    public void purchasesweet(Long id, int qty) {
+        Sweet s = sweetRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Sweet not found"));
+        if (s.getQuantity() < qty) {
+            throw new InsufficientStockException("Insufficient quantity");
+        }
+        s.setQuantity(s.getQuantity() - qty);
+        sweetRepository.save(s);
     }
 
     @Override

@@ -35,7 +35,7 @@ class SweetServiceTest {
         when(sweetRepository.findById(1L)).thenReturn(Optional.of(s));
 
         // Act
-        sweetService.purchase(1L, 2);
+        sweetService.purchasesweet(1L, 2);
 
         // Assert
         assertEquals(3, s.getQuantity());

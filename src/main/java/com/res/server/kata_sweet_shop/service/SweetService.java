@@ -17,7 +17,7 @@ public interface SweetService{
 
     List<Sweet> search(Optional<String> name, Optional<String>Category, Optional<BigDecimal> minPrice,
                        Optional<BigDecimal> maxPrice);
-    void purchase(Long id,int qty);
+    void purchasesweet(Long id,int qty);
     void restock(Long id,int qty);
     Optional<Sweet> findById(Long id);
 

@@ -68,8 +68,11 @@ public Sweet update(Long id, SweetRequest request) {
     public void purchasesweet(Long id, int qty) {
         Sweet s = sweetRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Sweet not found"));
         if (s.getQuantity() < qty) {
-            throw new InsufficientStockException("Insufficient quantity");
+            throw new InsufficientStockException(
+                    String.format("Requested %d but only %d available", qty, s.getQuantity())
+            );
         }
+
         s.setQuantity(s.getQuantity() - qty);
         sweetRepository.save(s);
     }

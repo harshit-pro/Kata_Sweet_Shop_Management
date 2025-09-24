@@ -58,7 +58,7 @@ public class SweetController {
     @PostMapping("/{id}/purchase")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')") // <-- Fix: ensure only authenticated users can purchase
     public ResponseEntity<?> purchase(@PathVariable Long id, @RequestBody PurchaseRequest request) {
-        sweetService.purchase(id, request.getQuantity());
+        sweetService.purchasesweet(id, request.getQuantity());
         return ResponseEntity.ok("Purchased");
     }
 

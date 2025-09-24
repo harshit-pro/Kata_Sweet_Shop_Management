@@ -54,7 +54,7 @@ class SweetServiceTest {
 
         // Act + Assert
         assertThrows(InsufficientStockException.class, () -> {
-            sweetService.purchase(1L, 1);
+            sweetService.purchasesweet(1L, 1);
         });
         verify(sweetRepository, never()).save(any());
     }

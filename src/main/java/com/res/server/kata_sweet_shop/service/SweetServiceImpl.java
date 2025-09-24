@@ -1,0 +1,90 @@
+package com.res.server.kata_sweet_shop.service;
+
+import com.res.server.kata_sweet_shop.dto.SweetRequest;
+import com.res.server.kata_sweet_shop.entity.Sweet;
+import com.res.server.kata_sweet_shop.exception.InsufficientStockException;
+import com.res.server.kata_sweet_shop.exception.ResourceNotFoundException;
+import com.res.server.kata_sweet_shop.repository.SweetRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class SweetServiceImpl implements SweetService{
+
+    private final SweetRepository sweetRepository;
+
+    @Override
+    public Sweet create(SweetRequest request) {
+        System.out.println("Creating Sweet: " + request);
+       Sweet sweet=Sweet.builder()
+               .name(request.getName())
+               .category(request.getCategory())
+               .price(request.getPrice())
+               .quantity(request.getQuantity()).build();
+        System.out.println("Built Sweet entity: " + sweet);
+        return sweetRepository.save(sweet);
+    }
+// Update an existing Sweet entity by modifying its fields and saving.
+// Using the builder is not ideal here because we need to preserve the existing ID and DB-managed fields.
+@Override
+public Sweet update(Long id, SweetRequest request) {
+    Sweet sweet = getSweetById(id);
+    sweet.setName(request.getName());
+    sweet.setCategory(request.getCategory());
+    sweet.setPrice(request.getPrice());
+    if (request.getQuantity() != null) {
+        sweet.setQuantity(request.getQuantity());
+    }
+    return sweetRepository.save(sweet);
+}
+    // Private helper to avoid repetition
+    private Sweet getSweetById(Long id) {
+        return sweetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sweet not found"));
+    }
+    public  void delete(Long id){
+        sweetRepository.deleteById(id);
+    }
+    public List<Sweet> listAll(){
+      return sweetRepository.findAll();
+    }
+
+    @Override
+    public List<Sweet> search(Optional<String> name, Optional<String> category, Optional<BigDecimal> minPrice, Optional<BigDecimal> maxPrice) {
+        if (name.isPresent()) return sweetRepository.findByNameContainingIgnoreCase(name.get());
+        if (category.isPresent()) return sweetRepository.findByCategoryIgnoreCase(category.get());
+        if (minPrice.isPresent() && maxPrice.isPresent()) return sweetRepository.findByPriceRange(minPrice.get(), maxPrice.get());
+        return sweetRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void purchase(Long id, int qty) {
+//        Sweet s = sweetRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Sweet not found"));
+//        if (s.getQuantity() < qty) {
+//            throw new InsufficientStockException("Insufficient quantity");
+//        }
+//        s.setQuantity(s.getQuantity() - qty);
+//        sweetRepository.save(s);
+    }
+
+    @Override
+    @Transactional
+    public void restock(Long id, int qty) {
+        Sweet s = sweetRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Sweet not found"));
+        s.setQuantity(s.getQuantity() + qty);
+        sweetRepository.save(s);
+    }
+
+    @Override
+    public Optional<Sweet> findById(Long id) {
+        return sweetRepository.findById(id);
+    }
+}
+

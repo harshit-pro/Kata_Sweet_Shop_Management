@@ -27,7 +27,6 @@ public class SweetController {
     private final ImageService imageService;
     private final SweetService sweetService;
     @GetMapping("/all")
-    @PreAuthorize("hasRole('USER')")
     public List<SweetResponse> all() {System.out.println("Fetching all sweets");
         return sweetService.listAll().stream().map(this::toResp).collect(Collectors.toList());
     }

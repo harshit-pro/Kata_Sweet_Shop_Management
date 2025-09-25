@@ -91,4 +91,18 @@ class SweetServiceTest {
         when(sweetRepository.save(any(Sweet.class))).thenThrow(new IllegalArgumentException("Name is required"));
         assertThrows(IllegalArgumentException.class, () -> sweetService.create(request));
     }
+
+    /**
+     * Test that SweetService.create fails when required fields (name, price) are missing.
+     */
+    @Test
+    void createSweet_shouldFail_whenRequiredFieldsMissing() {
+        SweetRequest request = new SweetRequest();
+        request.setCategory("Candy");
+        request.setQuantity(10);
+        request.setImageUrl("http://test.com/image.jpg");
+        // No name, no price
+        when(sweetRepository.save(any(Sweet.class))).thenThrow(new IllegalArgumentException("Name and price are required"));
+        assertThrows(IllegalArgumentException.class, () -> sweetService.create(request));
+    }
 }

@@ -101,4 +101,31 @@ public class SweetIntegrationTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk());
     }
+
+    /**
+     * Integration test for multipart image upload to /api/sweets/add.
+     * This test expects the Cloudinary upload to fail, resulting in a 500 error.
+     */
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testAddSweetWithImage_shouldFailWithoutMock() throws Exception {
+        String sweetJson = "{" +
+                "\"name\": \"Test Sweet\"," +
+                "\"category\": \"Candy\"," +
+                "\"price\": 2.99," +
+                "\"quantity\": 10" +
+                "}";
+        MockMultipartFile sweetPart = new MockMultipartFile(
+                "sweet", "sweet.json", "application/json", sweetJson.getBytes()
+        );
+        MockMultipartFile imagePart = new MockMultipartFile(
+                "image", "image.jpg", MediaType.IMAGE_JPEG_VALUE, "dummy image content".getBytes()
+        );
+        // Expect 500 error due to real Cloudinary upload failure
+        mockMvc.perform(multipart("/api/sweets/add")
+                .file(sweetPart)
+                .file(imagePart)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isInternalServerError());
+    }
 }

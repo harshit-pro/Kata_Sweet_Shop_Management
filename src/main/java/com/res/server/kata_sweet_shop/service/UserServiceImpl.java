@@ -15,7 +15,7 @@ import java.util.HashSet;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    @Transactional // why usig Transactional here?
+    @Transactional // why using Transactional here?
     // because we want to make sure that the user is saved in the database
     // and if there is any error, the transaction is rolled back
     @Override

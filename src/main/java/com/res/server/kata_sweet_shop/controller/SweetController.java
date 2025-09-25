@@ -22,7 +22,7 @@ public class SweetController {
     public SweetController(SweetService sweetService) {
         this.sweetService = sweetService;
     }
-    @GetMapping
+    @GetMapping("/all")
     public List<SweetResponse> all() {
         return sweetService.listAll().stream().map(this::toResp).collect(Collectors.toList());
     }
@@ -41,14 +41,15 @@ public class SweetController {
         Sweet s = sweetService.create(req);
         return ResponseEntity.ok(toResp(s));
     }
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SweetResponse> update(@PathVariable Long id, @RequestBody SweetRequest req) {
+        System.out.println("Updating Sweet with ID: " + id);
         Sweet s = sweetService.update(id, req);
         return ResponseEntity.ok(toResp(s));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         sweetService.delete(id);
@@ -56,7 +57,8 @@ public class SweetController {
     }
 
     @PostMapping("/{id}/purchase")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')") // <-- Fix: ensure only authenticated users can purchase
+    @PreAuthorize("hasRole('USER')")   // yaha admin aur user dono kar sakte hain
+    // but usually purchase user karta hai
     public ResponseEntity<?> purchase(@PathVariable Long id, @RequestBody PurchaseRequest request) {
         sweetService.purchasesweet(id, request.getQuantity());
         return ResponseEntity.ok("Purchased");

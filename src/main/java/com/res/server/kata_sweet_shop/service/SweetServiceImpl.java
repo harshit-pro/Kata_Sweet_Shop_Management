@@ -34,6 +34,7 @@ public class SweetServiceImpl implements SweetService{
 // Using the builder is not ideal here because we need to preserve the existing ID and DB-managed fields.
 @Override
 public Sweet update(Long id, SweetRequest request) {
+    System.out.println("Updating Sweet with ID: " + id + " using data: " + request);
     Sweet sweet = getSweetById(id);
     sweet.setName(request.getName());
     sweet.setCategory(request.getCategory());
@@ -54,7 +55,6 @@ public Sweet update(Long id, SweetRequest request) {
     public List<Sweet> listAll(){
       return sweetRepository.findAll();
     }
-
     @Override
     public List<Sweet> search(Optional<String> name, Optional<String> category, Optional<BigDecimal> minPrice, Optional<BigDecimal> maxPrice) {
         if (name.isPresent()) return sweetRepository.findByNameContainingIgnoreCase(name.get());

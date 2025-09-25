@@ -76,6 +76,10 @@ public class SweetIntegrationTest {
         assertEquals("Ladoo", fetched.getName());
     }
 
+    /**
+     * Integration test for multipart image upload to /api/sweets/add.
+     * Cloudinary is mocked to always return a dummy image URL.
+     */
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     void testAddSweetWithImage() throws Exception {

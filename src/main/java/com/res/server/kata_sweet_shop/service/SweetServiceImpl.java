@@ -13,23 +13,34 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+
 @Service
 @RequiredArgsConstructor
 public class SweetServiceImpl implements SweetService{
 
     private final SweetRepository sweetRepository;
 
+    /**
+     * Creates a new Sweet entity from the given request.
+     * Throws IllegalArgumentException if name is missing.
+     */
     @Override
     public Sweet create(SweetRequest request) {
+        if (request.getName() == null || request.getName().isBlank()) {
+            throw new IllegalArgumentException("Name is required");
+        }
         System.out.println("Creating Sweet: " + request);
        Sweet sweet=Sweet.builder()
                .name(request.getName())
                .category(request.getCategory())
                .price(request.getPrice())
-               .quantity(request.getQuantity()).build();
+               .quantity(request.getQuantity())
+               .imageUrl(request.getImageUrl())
+               .build();
         System.out.println("Built Sweet entity: " + sweet);
         return sweetRepository.save(sweet);
     }
+
 // Update an existing Sweet entity by modifying its fields and saving.
 // Using the builder is not ideal here because we need to preserve the existing ID and DB-managed fields.
 @Override
@@ -39,6 +50,9 @@ public Sweet update(Long id, SweetRequest request) {
     sweet.setName(request.getName());
     sweet.setCategory(request.getCategory());
     sweet.setPrice(request.getPrice());
+    sweet.setQuantity(request.getQuantity());
+    sweet.setImageUrl(request.getImageUrl());
+
     if (request.getQuantity() != null) {
         sweet.setQuantity(request.getQuantity());
     }
@@ -62,7 +76,6 @@ public Sweet update(Long id, SweetRequest request) {
         if (minPrice.isPresent() && maxPrice.isPresent()) return sweetRepository.findByPriceRange(minPrice.get(), maxPrice.get());
         return sweetRepository.findAll();
     }
-
     @Override
     @Transactional
     public void purchasesweet(Long id, int qty) {
@@ -72,11 +85,9 @@ public Sweet update(Long id, SweetRequest request) {
                     String.format("Requested %d but only %d available", qty, s.getQuantity())
             );
         }
-
         s.setQuantity(s.getQuantity() - qty);
         sweetRepository.save(s);
     }
-
     @Override
     @Transactional
     public void restock(Long id, int qty) {
@@ -84,10 +95,8 @@ public Sweet update(Long id, SweetRequest request) {
         s.setQuantity(s.getQuantity() + qty);
         sweetRepository.save(s);
     }
-
     @Override
     public Optional<Sweet> findById(Long id) {
         return sweetRepository.findById(id);
     }
 }
-

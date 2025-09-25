@@ -18,10 +18,20 @@ public class UserServiceImpl implements UserService {
     @Transactional // why using Transactional here?
     // because we want to make sure that the user is saved in the database
     // and if there is any error, the transaction is rolled back
+    /**
+     * Registers a new user. Validates username and email are present and unique.
+     * Throws IllegalArgumentException if validation fails.
+     */
     @Override
     public User register(RegisterRequest request) {
-        if (userRepository.existsByUsername((request.getUsername()))){
-            throw new IllegalArgumentException("Username is already taken");
+        if (request.getUsername() == null || request.getUsername().isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
         }
         User user = User.builder()
                 .username(request.getUsername())

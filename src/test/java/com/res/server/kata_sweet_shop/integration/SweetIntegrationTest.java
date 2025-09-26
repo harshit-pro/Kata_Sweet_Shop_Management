@@ -1,13 +1,12 @@
 package com.res.server.kata_sweet_shop.integration;
 
-
 import com.res.server.kata_sweet_shop.entity.Sweet;
 import com.res.server.kata_sweet_shop.repository.SweetRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -25,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Uploader;
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
 import java.util.HashMap;
@@ -47,8 +47,11 @@ public class SweetIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private Cloudinary cloudinary;
+
+    @MockBean
+    private Uploader uploader;
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
@@ -61,7 +64,10 @@ public class SweetIntegrationTest {
     void setupCloudinaryMock() throws Exception {
         Map<String, Object> dummyResult = new HashMap<>();
         dummyResult.put("url", "http://dummy.com/image.jpg");
-        when(cloudinary.uploader().upload(any(byte[].class), anyMap())).thenReturn(dummyResult);
+        
+        // Mock the uploader and its methods
+        when(cloudinary.uploader()).thenReturn(uploader);
+        when(uploader.upload(any(byte[].class), anyMap())).thenReturn(dummyResult);
     }
 
     @Test
@@ -104,17 +110,17 @@ public class SweetIntegrationTest {
     }
 
     /**
-     * Integration test for multipart image upload to /api/sweets/add.
-     * This test expects the Cloudinary upload to fail, resulting in a 500 error.
+     * Integration test: Successfully add sweet with image using mocked Cloudinary.  
+     * This test demonstrates the proper mocking approach for external dependencies.
      */
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testAddSweetWithImage_shouldFailWithoutMock() throws Exception {
+    void testAddSweetWithImage_shouldSucceedWithMock() throws Exception {
         String sweetJson = "{" +
-                "\"name\": \"Test Sweet\"," +
+                "\"name\": \"Mocked Sweet\"," +
                 "\"category\": \"Candy\"," +
-                "\"price\": 2.99," +
-                "\"quantity\": 10" +
+                "\"price\": 3.99," +
+                "\"quantity\": 15" +
                 "}";
         MockMultipartFile sweetPart = new MockMultipartFile(
                 "sweet", "sweet.json", "application/json", sweetJson.getBytes()
@@ -122,12 +128,20 @@ public class SweetIntegrationTest {
         MockMultipartFile imagePart = new MockMultipartFile(
                 "image", "image.jpg", MediaType.IMAGE_JPEG_VALUE, "dummy image content".getBytes()
         );
-        // Expect 500 error due to real Cloudinary upload failure
+        
         mockMvc.perform(multipart("/api/sweets/add")
                 .file(sweetPart)
                 .file(imagePart)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    // Verify that the response contains the expected image URL from our mock
+                    String responseBody = result.getResponse().getContentAsString();
+                    assertTrue(responseBody.contains("http://dummy.com/image.jpg"));
+                });
+        
+        // Verify that Cloudinary was called as expected
+        verify(uploader, times(1)).upload(any(byte[].class), anyMap());
     }
 
     /**

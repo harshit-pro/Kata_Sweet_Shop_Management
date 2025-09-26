@@ -19,6 +19,7 @@ import java.util.Optional;
 public class SweetServiceImpl implements SweetService{
 
     private final SweetRepository sweetRepository;
+    private final SweetRequestValidator validator;
 
     /**
      * Creates a new Sweet entity from the given request.
@@ -30,7 +31,7 @@ public class SweetServiceImpl implements SweetService{
      */
     @Override
     public Sweet create(SweetRequest request) {
-        validateSweetRequest(request);
+        validator.validate(request);
         
         Sweet sweet = Sweet.builder()
                .name(request.getName())
@@ -43,24 +44,6 @@ public class SweetServiceImpl implements SweetService{
         return sweetRepository.save(sweet);
     }
 
-    /**
-     * Validates a SweetRequest according to business rules.
-     * Following clean code principles with clear validation logic.
-     */
-    private void validateSweetRequest(SweetRequest request) {
-        if (request.getName() == null || request.getName().isBlank()) {
-            throw new IllegalArgumentException("Name is required");
-        }
-        
-        if (request.getPrice() != null && request.getPrice().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Price must be positive");
-        }
-        
-        if (request.getQuantity() != null && request.getQuantity() < 0) {
-            throw new IllegalArgumentException("Quantity must be non-negative");
-        }
-    }
-
 /**
  * Updates an existing Sweet entity by modifying its fields and saving.
  * Following clean code principles - preserving the existing ID and DB-managed fields.
@@ -71,7 +54,7 @@ public class SweetServiceImpl implements SweetService{
  */
 @Override
 public Sweet update(Long id, SweetRequest request) {
-    validateSweetRequest(request);
+    validator.validate(request);
     
     Sweet sweet = getSweetById(id);
     sweet.setName(request.getName());

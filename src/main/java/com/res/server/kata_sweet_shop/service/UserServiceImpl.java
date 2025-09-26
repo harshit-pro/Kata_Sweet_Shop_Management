@@ -10,29 +10,29 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 
+/**
+ * Implementation of UserService interface.
+ * Handles user registration with proper validation and security measures.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    @Transactional // why using Transactional here?
-    // because we want to make sure that the user is saved in the database
-    // and if there is any error, the transaction is rolled back
+    
     /**
-     * Registers a new user. Validates username and email are present and unique.
-     * Throws IllegalArgumentException if validation fails.
+     * Registers a new user with validation and secure password encoding.
+     * Uses transaction to ensure atomicity - if any step fails, the entire operation is rolled back.
+     * 
+     * @param request The registration request containing user details
+     * @return The saved User entity with default role assigned
+     * @throws IllegalArgumentException if validation fails
      */
+    @Transactional
     @Override
     public User register(RegisterRequest request) {
-        if (request.getUsername() == null || request.getUsername().isBlank()) {
-            throw new IllegalArgumentException("Username is required");
-        }
-        if (request.getEmail() == null || request.getEmail().isBlank()) {
-            throw new IllegalArgumentException("Email is required");
-        }
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username already exists");
-        }
+        validateRegistrationRequest(request);
+        
         User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -42,7 +42,26 @@ public class UserServiceImpl implements UserService {
         if (user.getRoles() == null) {
             user.setRoles(new HashSet<>());
         }
-        user.getRoles().add("USER"); // default role
+        user.getRoles().add("USER"); // Default role assignment
+        
         return userRepository.save(user);
+    }
+    
+    /**
+     * Validates the registration request according to business rules.
+     * 
+     * @param request The request to validate
+     * @throws IllegalArgumentException if validation fails
+     */
+    private void validateRegistrationRequest(RegisterRequest request) {
+        if (request.getUsername() == null || request.getUsername().isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
     }
 }

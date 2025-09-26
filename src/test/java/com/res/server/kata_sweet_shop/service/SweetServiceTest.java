@@ -22,6 +22,9 @@ class SweetServiceTest {
     @Mock
     private SweetRepository sweetRepository;
 
+    @Mock
+    private SweetRequestValidator validator;
+
     @InjectMocks
     private SweetServiceImpl sweetService;
 
@@ -90,12 +93,17 @@ class SweetServiceTest {
         request.setQuantity(10);
         request.setImageUrl("http://test.com/image.jpg");
         
-        // Act & Assert - The service should validate and throw exception before calling repository
+        // Mock validator to throw exception
+        doThrow(new IllegalArgumentException("Name is required"))
+                .when(validator).validate(request);
+        
+        // Act & Assert - The service should delegate validation to validator
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
             () -> sweetService.create(request));
         assertEquals("Name is required", exception.getMessage());
         
-        // Verify repository save was never called since validation failed
+        // Verify validator was called and repository save was never called
+        verify(validator, times(1)).validate(request);
         verify(sweetRepository, never()).save(any(Sweet.class));
     }
 
@@ -112,12 +120,17 @@ class SweetServiceTest {
         request.setImageUrl("http://test.com/image.jpg");
         // No name, no price set
         
-        // Act & Assert - Service should validate inputs before calling repository
+        // Mock validator to throw exception
+        doThrow(new IllegalArgumentException("Name is required"))
+                .when(validator).validate(request);
+        
+        // Act & Assert - Service should delegate validation to validator
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
             () -> sweetService.create(request));
         assertEquals("Name is required", exception.getMessage());
         
-        // Verify repository was never called due to validation failure
+        // Verify validator was called and repository was never called due to validation failure
+        verify(validator, times(1)).validate(request);
         verify(sweetRepository, never()).save(any(Sweet.class));
     }
 
@@ -134,12 +147,17 @@ class SweetServiceTest {
         request.setPrice(new BigDecimal("-1.00")); // Negative price should be invalid
         request.setQuantity(10);
         
+        // Mock validator to throw exception for negative price
+        doThrow(new IllegalArgumentException("Price must be positive"))
+                .when(validator).validate(request);
+        
         // Act & Assert - Should throw exception for negative price
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> sweetService.create(request));
         assertEquals("Price must be positive", exception.getMessage());
         
-        // Verify repository save was never called
+        // Verify validator was called and repository save was never called
+        verify(validator, times(1)).validate(request);
         verify(sweetRepository, never()).save(any(Sweet.class));
     }
 
@@ -156,12 +174,17 @@ class SweetServiceTest {
         request.setPrice(new BigDecimal("2.99"));
         request.setQuantity(-5); // Negative quantity should be invalid
         
+        // Mock validator to throw exception for negative quantity
+        doThrow(new IllegalArgumentException("Quantity must be non-negative"))
+                .when(validator).validate(request);
+        
         // Act & Assert - Should throw exception for negative quantity
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> sweetService.create(request));
         assertEquals("Quantity must be non-negative", exception.getMessage());
         
-        // Verify repository save was never called
+        // Verify validator was called and repository save was never called
+        verify(validator, times(1)).validate(request);
         verify(sweetRepository, never()).save(any(Sweet.class));
     }
 }

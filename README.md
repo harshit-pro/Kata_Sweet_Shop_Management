@@ -3,6 +3,7 @@
 Welcome to Sweet Shop, a full-stack inventory management system designed for confectionery businesses. This application provides a professional, feature-rich interface for both customers and administrators, built with a modern tech stack. The project includes a Spring Boot backend that handles business logic and a React frontend for a seamless user experience.
 
 -----
+<img width="1360" height="204" alt="image" src="https://github.com/user-attachments/assets/b952f74b-5375-4a3d-b630-1396fe918caa" />
 
 ## 📖 Project Overview
 

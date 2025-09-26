@@ -10,4 +10,6 @@ public class SweetResponse {
     private String category;
     private BigDecimal price;
     private Integer quantity;
+    private String imageUrl; // add this
+
 }

@@ -51,6 +51,10 @@ class UserServiceTest {
                 .password("encodedPassword")
                 .email("new@example.com")
                 .build();
+        // Ensure roles are initialized and contain "USER"
+        java.util.Set<String> roles = new java.util.HashSet<>();
+        roles.add("USER");
+        expectedUser.setRoles(roles);
         when(userRepository.save(any(User.class))).thenReturn(expectedUser);
         User result = userService.register(request);
         assertEquals("newUser", result.getUsername());
@@ -61,6 +65,7 @@ class UserServiceTest {
 
     /**
      * Test that registration fails if the email is missing.
+     * Should throw IllegalArgumentException with message "Email is required".
      */
     @Test
     void register_shouldFail_whenEmailMissing() {
@@ -68,7 +73,8 @@ class UserServiceTest {
         request.setUsername("user1");
         request.setPassword("password");
         // No email set
-        when(userRepository.existsByUsername("user1")).thenReturn(false);
-        assertThrows(IllegalArgumentException.class, () -> userService.register(request));
+        // Removed unnecessary stubbing
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> userService.register(request));
+        assertEquals("Email is required", ex.getMessage());
     }
 }

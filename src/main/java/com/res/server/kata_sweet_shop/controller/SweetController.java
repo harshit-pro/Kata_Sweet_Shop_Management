@@ -6,6 +6,7 @@ import com.res.server.kata_sweet_shop.dto.SweetResponse;
 import com.res.server.kata_sweet_shop.entity.Sweet;
 import com.res.server.kata_sweet_shop.service.ImageService;
 import com.res.server.kata_sweet_shop.service.SweetService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,10 +42,9 @@ public class SweetController {
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SweetResponse> create(
-            @RequestPart("sweet") SweetRequest req,
+            @RequestPart("sweet") @Valid SweetRequest req,
             @RequestPart("image") MultipartFile imageFile) throws IOException {
         String imageUrl = imageService.uploadImage(imageFile);
-        System.out.println("Uploaded image URL: " + imageUrl);
         req.setImageUrl(imageUrl);
         Sweet s = sweetService.create(req);
         return ResponseEntity.ok(toResp(s));
@@ -84,7 +84,7 @@ public class SweetController {
         response.setCategory(s.getCategory());
         response.setPrice(s.getPrice());
         response.setQuantity(s.getQuantity());
-        response.setImageUrl(s.getImageUrl()); // Directly set imageUrl from Sweet's image field
+        response.setImageUrl(s.getImageUrl()); // Use getImageUrl() for consistency
         return response;
     }
 }

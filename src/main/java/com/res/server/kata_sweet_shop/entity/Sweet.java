@@ -26,5 +26,6 @@ public class Sweet {
     // the version field will ensure that only one of the updates is applied,
     // and the other user will receive an error indicating that the entity has been modified by another transaction.
     private Long version;
+    private String imageUrl;
 
 }

@@ -4,6 +4,7 @@ package com.res.server.kata_sweet_shop.integration;
 import com.res.server.kata_sweet_shop.entity.Sweet;
 import com.res.server.kata_sweet_shop.repository.SweetRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +23,7 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.boot.test.mock.mockito.MockBean;
+
 import com.cloudinary.Cloudinary;
 import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +47,7 @@ public class SweetIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private Cloudinary cloudinary;
 
     @DynamicPropertySource
@@ -127,5 +128,29 @@ public class SweetIntegrationTest {
                 .file(imagePart)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isInternalServerError());
+    }
+
+    /**
+     * Integration test: invalid SweetRequest should return 400 Bad Request with error details.
+     */
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void addSweet_shouldReturn400_whenRequestInvalid() throws Exception {
+        String sweetJson = "{" +
+                "\"category\": \"Candy\"," +
+                "\"quantity\": 10" +
+                "}"; // missing name and price
+        MockMultipartFile sweetPart = new MockMultipartFile(
+                "sweet", "sweet.json", "application/json", sweetJson.getBytes()
+        );
+        MockMultipartFile imagePart = new MockMultipartFile(
+                "image", "image.jpg", MediaType.IMAGE_JPEG_VALUE, "dummy image content".getBytes()
+        );
+        mockMvc.perform(multipart("/api/sweets/add")
+                .file(sweetPart)
+                .file(imagePart)
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isBadRequest());
+        // Optionally, check for error details in the response body
     }
 }

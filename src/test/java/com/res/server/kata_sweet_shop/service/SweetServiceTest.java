@@ -83,26 +83,85 @@ class SweetServiceTest {
 
     @Test
     void createSweet_shouldThrowException_whenNameMissing() {
+        // Red: Test for missing name validation
         SweetRequest request = new SweetRequest();
         request.setCategory("Candy");
         request.setPrice(new BigDecimal("2.99"));
         request.setQuantity(10);
         request.setImageUrl("http://test.com/image.jpg");
-        when(sweetRepository.save(any(Sweet.class))).thenThrow(new IllegalArgumentException("Name is required"));
-        assertThrows(IllegalArgumentException.class, () -> sweetService.create(request));
+        
+        // Act & Assert - The service should validate and throw exception before calling repository
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
+            () -> sweetService.create(request));
+        assertEquals("Name is required", exception.getMessage());
+        
+        // Verify repository save was never called since validation failed
+        verify(sweetRepository, never()).save(any(Sweet.class));
     }
 
     /**
      * Test that SweetService.create fails when required fields (name, price) are missing.
+     * This follows TDD Red-Green-Refactor: testing validation before implementation.
      */
     @Test
     void createSweet_shouldFail_whenRequiredFieldsMissing() {
+        // Red: Test case for missing required fields validation
         SweetRequest request = new SweetRequest();
         request.setCategory("Candy");
         request.setQuantity(10);
         request.setImageUrl("http://test.com/image.jpg");
-        // No name, no price
-        when(sweetRepository.save(any(Sweet.class))).thenThrow(new IllegalArgumentException("Name and price are required"));
-        assertThrows(IllegalArgumentException.class, () -> sweetService.create(request));
+        // No name, no price set
+        
+        // Act & Assert - Service should validate inputs before calling repository
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
+            () -> sweetService.create(request));
+        assertEquals("Name is required", exception.getMessage());
+        
+        // Verify repository was never called due to validation failure
+        verify(sweetRepository, never()).save(any(Sweet.class));
+    }
+
+    /**
+     * TDD Red phase: Test for negative price validation
+     * This test should fail initially, driving us to implement price validation
+     */
+    @Test
+    void createSweet_shouldFail_whenPriceIsNegative() {
+        // Arrange - Create request with negative price
+        SweetRequest request = new SweetRequest();
+        request.setName("Test Sweet");
+        request.setCategory("Candy");
+        request.setPrice(new BigDecimal("-1.00")); // Negative price should be invalid
+        request.setQuantity(10);
+        
+        // Act & Assert - Should throw exception for negative price
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> sweetService.create(request));
+        assertEquals("Price must be positive", exception.getMessage());
+        
+        // Verify repository save was never called
+        verify(sweetRepository, never()).save(any(Sweet.class));
+    }
+
+    /**
+     * TDD Red phase: Test for zero quantity validation
+     * This test ensures we validate business rules properly
+     */
+    @Test
+    void createSweet_shouldFail_whenQuantityIsNegative() {
+        // Arrange - Create request with negative quantity
+        SweetRequest request = new SweetRequest();
+        request.setName("Test Sweet");
+        request.setCategory("Candy");
+        request.setPrice(new BigDecimal("2.99"));
+        request.setQuantity(-5); // Negative quantity should be invalid
+        
+        // Act & Assert - Should throw exception for negative quantity
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> sweetService.create(request));
+        assertEquals("Quantity must be non-negative", exception.getMessage());
+        
+        // Verify repository save was never called
+        verify(sweetRepository, never()).save(any(Sweet.class));
     }
 }

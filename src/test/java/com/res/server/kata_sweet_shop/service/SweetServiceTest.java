@@ -68,6 +68,7 @@ class SweetServiceTest {
         request.setPrice(new BigDecimal("2.99"));
         request.setQuantity(10);
         request.setImageUrl("http://test.com/image.jpg");
+
         Sweet expectedSweet = Sweet.builder()
                 .name("Test Sweet")
                 .category("Candy")
@@ -75,7 +76,9 @@ class SweetServiceTest {
                 .quantity(10)
                 .imageUrl("http://test.com/image.jpg")
                 .build();
+
         when(sweetRepository.save(any(Sweet.class))).thenReturn(expectedSweet);
+
         Sweet sweet = sweetService.create(request);
         assertNotNull(sweet);
         assertEquals("http://test.com/image.jpg", sweet.getImageUrl());
@@ -83,26 +86,38 @@ class SweetServiceTest {
 
     @Test
     void createSweet_shouldThrowException_whenNameMissing() {
+        // This test now focuses on the validation logic in the service itself,
+        // not on repository behavior
         SweetRequest request = new SweetRequest();
+        // No name
         request.setCategory("Candy");
         request.setPrice(new BigDecimal("2.99"));
         request.setQuantity(10);
         request.setImageUrl("http://test.com/image.jpg");
-        when(sweetRepository.save(any(Sweet.class))).thenThrow(new IllegalArgumentException("Name is required"));
+
+        // Test for exceptions directly from service validation
         assertThrows(IllegalArgumentException.class, () -> sweetService.create(request));
+
+        // Verify repository was never called
+        verify(sweetRepository, never()).save(any());
     }
 
     /**
-     * Test that SweetService.create fails when required fields (name, price) are missing.
+     * Test that SweetService.create fails when required fields (price) are missing.
      */
     @Test
     void createSweet_shouldFail_whenRequiredFieldsMissing() {
         SweetRequest request = new SweetRequest();
+        request.setName("Test Sweet");
         request.setCategory("Candy");
+        // No price
         request.setQuantity(10);
         request.setImageUrl("http://test.com/image.jpg");
-        // No name, no price
-        when(sweetRepository.save(any(Sweet.class))).thenThrow(new IllegalArgumentException("Name and price are required"));
+
+        // Test for exceptions directly from service validation
         assertThrows(IllegalArgumentException.class, () -> sweetService.create(request));
+
+        // Verify repository was never called
+        verify(sweetRepository, never()).save(any());
     }
 }

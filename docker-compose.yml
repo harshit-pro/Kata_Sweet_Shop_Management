@@ -1,16 +1,81 @@
-
 version: '3.8'
+
 services:
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345
-      POSTGRES_DB: sweetshop
+  # Backend service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sweet-shop-backend
     ports:
-      - "5432:5432"
+      - "8086:8086"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/sweetshop
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=12345
+      - FRONTEND_URL=http://inventory-frontend:80
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    depends_on:
+      - db
+    networks:
+      - sweet-shop-network
+    restart: always
+
+  # Database service
+  db:
+    image: postgres:15-alpine
+    container_name: sweet-shop-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=sweetshop
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - sweet-shop-network
+    restart: always
+
+  # AI Sweet Shop Frontend
+  ai-frontend:
+    build:
+      context: .
+      dockerfile: frontend/AI_Sweet_Shop/Dockerfile
+    container_name: sweet-shop-ai-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8086
+    depends_on:
+      - backend
+    networks:
+      - sweet-shop-network
+    restart: always
+
+  # Inventory Manager Frontend
+  inventory-frontend:
+    build:
+      context: .
+      dockerfile: frontend/treats-inventory-manager/Dockerfile
+    container_name: sweet-shop-inventory-frontend
+    ports:
+      - "5175:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8086
+    depends_on:
+      - backend
+    networks:
+      - sweet-shop-network
+    restart: always
+
+networks:
+  sweet-shop-network:
+    driver: bridge
 
 volumes:
-  db_data:
+  postgres-data:

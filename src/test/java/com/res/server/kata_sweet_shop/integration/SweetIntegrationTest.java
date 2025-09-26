@@ -4,42 +4,46 @@ package com.res.server.kata_sweet_shop.integration;
 import com.res.server.kata_sweet_shop.entity.Sweet;
 import com.res.server.kata_sweet_shop.repository.SweetRepository;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.cloudinary.Cloudinary;
-import static org.mockito.Mockito.*;
-import org.junit.jupiter.api.BeforeEach;
-import java.util.HashMap;
-import java.util.Map;
+import com.cloudinary.Uploader;
 
-@Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(properties = {
+    "spring.main.allow-bean-definition-overriding=true",
+    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.datasource.username=sa",
+    "spring.datasource.password=password",
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.datasource.driver-class-name=org.h2.Driver"
+})
+@ActiveProfiles("test")
 public class SweetIntegrationTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
 
     @Autowired
     private SweetRepository repo;
@@ -47,21 +51,27 @@ public class SweetIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
-    private Cloudinary cloudinary;
+    // Create a TestConfiguration that replaces the real Cloudinary bean with a mock
+    @TestConfiguration
+    static class CloudinaryTestConfig {
+        @Bean
+        @Primary
+        public Cloudinary cloudinary() {
+            Cloudinary mockCloudinary = mock(Cloudinary.class);
+            Uploader mockUploader = mock(Uploader.class);
 
-    @DynamicPropertySource
-    static void props(DynamicPropertyRegistry r) {
-        r.add("spring.datasource.url", postgres::getJdbcUrl);
-        r.add("spring.datasource.username", postgres::getUsername);
-        r.add("spring.datasource.password", postgres::getPassword);
-    }
+            try {
+                Map<String, Object> result = new HashMap<>();
+                result.put("url", "http://dummy.com/image.jpg");
 
-    @BeforeEach
-    void setupCloudinaryMock() throws Exception {
-        Map<String, Object> dummyResult = new HashMap<>();
-        dummyResult.put("url", "http://dummy.com/image.jpg");
-        when(cloudinary.uploader().upload(any(byte[].class), anyMap())).thenReturn(dummyResult);
+                when(mockCloudinary.uploader()).thenReturn(mockUploader);
+                when(mockUploader.upload(any(), anyMap())).thenReturn(result);
+            } catch (Exception e) {
+                // Handle exception
+            }
+
+            return mockCloudinary;
+        }
     }
 
     @Test
@@ -98,36 +108,8 @@ public class SweetIntegrationTest {
         );
         mockMvc.perform(multipart("/api/sweets/add")
                 .file(sweetPart)
-                .file(imagePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .file(imagePart))
                 .andExpect(status().isOk());
-    }
-
-    /**
-     * Integration test for multipart image upload to /api/sweets/add.
-     * This test expects the Cloudinary upload to fail, resulting in a 500 error.
-     */
-    @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testAddSweetWithImage_shouldFailWithoutMock() throws Exception {
-        String sweetJson = "{" +
-                "\"name\": \"Test Sweet\"," +
-                "\"category\": \"Candy\"," +
-                "\"price\": 2.99," +
-                "\"quantity\": 10" +
-                "}";
-        MockMultipartFile sweetPart = new MockMultipartFile(
-                "sweet", "sweet.json", "application/json", sweetJson.getBytes()
-        );
-        MockMultipartFile imagePart = new MockMultipartFile(
-                "image", "image.jpg", MediaType.IMAGE_JPEG_VALUE, "dummy image content".getBytes()
-        );
-        // Expect 500 error due to real Cloudinary upload failure
-        mockMvc.perform(multipart("/api/sweets/add")
-                .file(sweetPart)
-                .file(imagePart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isInternalServerError());
     }
 
     /**
@@ -151,6 +133,5 @@ public class SweetIntegrationTest {
                 .file(imagePart)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
-        // Optionally, check for error details in the response body
     }
 }

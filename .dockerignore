@@ -1,0 +1,30 @@
+# Exclude VCS and editor config
+.git
+.gitignore
+.idea
+*.iml
+
+# OS files
+.DS_Store
+
+# Node/Frontend assets (backend image doesn't need them)
+frontend/
+node_modules/
+
+# Maven build output
+/target
+
+# Local env files
+.env
+.env.*
+
+# Docker artifacts
+Dockerfile*
+!Dockerfile
+
+docker-compose.yml
+
+# Logs
+*.log
+logs/
+

@@ -29,6 +29,9 @@ public class SweetServiceImpl implements SweetService{
         if (request.getName() == null || request.getName().isBlank()) {
             throw new IllegalArgumentException("Name is required");
         }
+        if (request.getPrice() == null) {
+            throw new IllegalArgumentException("Price is required");
+        }
         System.out.println("Creating Sweet: " + request);
        Sweet sweet=Sweet.builder()
                .name(request.getName())

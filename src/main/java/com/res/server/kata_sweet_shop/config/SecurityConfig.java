@@ -42,7 +42,8 @@ public class SecurityConfig {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**","api/sweets/all").permitAll()   // login & register are public
+                        .requestMatchers("/", "/health").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/sweets/all").permitAll()
                         .requestMatchers("/api/sweets/**").hasAnyRole("USER", "ADMIN") // protect sweets endpoints
                         .requestMatchers("/api/users/**").authenticated() // user profile requires login
                         .anyRequest().denyAll() // block anything else

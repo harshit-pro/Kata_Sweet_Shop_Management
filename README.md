@@ -1,123 +1,132 @@
-# 🍬 Kata Sweet Shop
-A Spring Boot-based application for managing a sweet shop's inventory. This project demonstrates a clean backend design, Test-Driven Development (TDD), and integration with Cloudinary for image uploads.
+# 🍬 Sweet Shop: Full-Stack Inventory Management System
+
+Welcome to Sweet Shop, a full-stack inventory management system designed for confectionery businesses. This application provides a professional, feature-rich interface for both customers and administrators, built with a modern tech stack. The project includes a Spring Boot backend that handles business logic and a React frontend for a seamless user experience.
 
 -----
 
 ## 📖 Project Overview
 
-This is a demo inventory management system with the following features:
+This is a comprehensive inventory management system with the following features:
 
-  * **Add sweets:** Include details like name, category, price, quantity, and an image.
-  * **Image Uploads:** Images are uploaded via multipart requests and stored in Cloudinary.
-  * **Purchase sweets:** With stock validation to ensure availability.
-  * **Error Handling:** Meaningful error handling for insufficient stock or missing fields.
-
-The project is built to showcase the Red → Green → Refactor cycles of TDD, clean coding practices, and AI-assisted development.
+  * **For Customers:**
+      * **User Authentication:** Secure login and registration.
+      * **Interactive Dashboard:** Browse, search, and filter a wide variety of sweets.
+      * **Easy Shopping:** Purchase your favorite sweets with ease.
+  * **For Administrators:**
+      * **Admin Panel:** A comprehensive dashboard to perform CRUD (Create, Read, Update, Delete) operations on the sweets inventory.
+      * **Image Uploads:** Seamless image uploading for sweets, integrated with a backend service.
+  * **General:**
+      * **Modern UI/UX:** A beautiful and intuitive interface built with **React**, **TypeScript**, and **shadcn/ui**.
+      * **Responsive Design:** Fully responsive layout that works on desktops, tablets, and mobile devices.
+      * **State Management:** Efficient state management using **React Query** for server-state and React Context for global UI state.
 
 -----
 
 ## ⚙️ Tech Stack
 
-  * **Backend:** Spring Boot (Java 21)
+### Backend
+
+  * **Framework:** Spring Boot (Java 21)
   * **Database:** PostgreSQL
   * **ORM:** Hibernate / JPA
+  * **Authentication:** JWT (JSON Web Tokens)
   * **Image Uploads:** Cloudinary
   * **Build Tool:** Maven
-  * **Testing:** JUnit 5, Mockito, Spring Boot Test, Testcontainers
+  * **Testing:** JUnit 5, Mockito, Testcontainers
+
+### Frontend
+
+  * **Framework:** React (TypeScript), Vite
+  * **Styling:** Tailwind CSS, shadcn/ui
+  * **State Management:** TanStack Query (React Query)
+  * **Routing:** React Router
+  * **API Communication:** Axios
 
 -----
 
 ## 🚀 Getting Started
 
-### 1\. Clone Repository
+To get a local copy up and running, follow these simple steps for both the backend and frontend components.
 
-```bash
-git clone https://github.com/<your-username>/kata-sweet-shop.git
-cd kata-sweet-shop
-```
+### Backend Setup (`kata_sweet_shop_management`)
 
-### 2\. Configure Environment
+1.  **Prerequisites:**
 
-Set up a `application.properties` file with your database and Cloudinary credentials:
+      * Java 21 or later
+      * Maven
+      * Docker
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/sweetshop
-spring.datasource.username=postgres
-spring.datasource.password=postgres
+2.  **Clone the repository:**
 
-cloudinary.cloud-name=your-cloud-name
-cloudinary.api-key=your-api-key
-cloudinary.api-secret=your-api-secret
-```
+    ```sh
+    git clone https://github.com/harshit-pro/kata_sweet_shop_management.git
+    cd kata_sweet_shop_management
+    ```
 
-### 3\. Run the Application
+3.  **Configure Environment:**
 
-```bash
-./mvnw spring-boot:run
-```
+    The project uses a `docker-compose.yml` file to set up a PostgreSQL database. The default credentials are in `src/main/resources/application.properties`.
 
-### 4\. Run Tests
+    ```properties
+    spring.datasource.url=jdbc:postgresql://localhost:5433/sweetshop
+    spring.datasource.username=postgres
+    spring.datasource.password=12345
+    ```
 
-```bash
-./mvnw test
-```
+4.  **Run the Database:**
+
+    ```sh
+    docker-compose up -d
+    ```
+
+5.  **Run the Application:**
+
+    ```sh
+    ./mvnw spring-boot:run
+    ```
+
+    The backend server will start on `http://localhost:8086`.
+
+### Frontend Setup (`treats-inventory-manager`)
+
+1.  **Prerequisites:**
+
+      * [Node.js](https://nodejs.org/) (v18 or later recommended)
+      * [npm](https://www.npmjs.com/) or any other package manager.
+
+2.  **Clone the repository:**
+
+    ```sh
+    git clone https://github.com/harshit-pro/treats-inventory-manager.git
+    cd treats-inventory-manager
+    ```
+
+3.  **Install NPM packages:**
+
+    ```sh
+    npm install
+    ```
+
+4.  **Configure Environment Variables:**
+
+    Create a `.env` file in the root of the project and add your Cloudinary credentials.
+
+    ```env
+    VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+    VITE_CLOUDINARY_UPLOAD_PRESET=your_cloudinary_upload_preset
+    ```
+
+5.  **Run the development server:**
+
+    ```sh
+    npm run dev
+    ```
+
+    The application will be available at `http://localhost:5175`.
 
 -----
 
-## 🧪 Test Report
-
-The project follows TDD principles with unit and integration tests. Example test cases include:
-
-  * ✅ Purchasing sweets reduces stock.
-  * ✅ Purchasing with insufficient stock throws `InsufficientStockException`.
-  * ✅ Creating sweets with image URLs works.
-  * ✅ Creating sweets without required fields fails validation.
-  * ✅ Multipart image upload endpoint works with mocked Cloudinary.
-
-Run the test suite with:
-
-```bash
-./mvnw test
-```
-
------
-
-## 📸 API Endpoints
-
-### Sweets
-
-  * **GET /api/sweets/all:** Get all sweets.
-  * **GET /api/sweets/search:** Search for sweets by name, category, or price range.
-  * **POST /api/sweets/add:** Add a new sweet (Admin only).
-  * **PUT /api/sweets/update/{id}:** Update a sweet (Admin only).
-  * **DELETE /api/sweets/delete/{id}:** Delete a sweet (Admin only).
-  * **POST /api/sweets/purchase/{id}:** Purchase a sweet (User or Admin).
-  * **POST /api/sweets/restock/{id}:** Restock a sweet (Admin only).
-
-### Authentication
-
-  * **POST /api/auth/register:** Register a new user.
-  * **POST /api/auth/login:** Login to get a JWT token.
-
------
-
-## 🤖 My AI Usage
-
-I used AI tools responsibly during development.
-
-### Tools Used
-
-  * **ChatGPT:** Helped with TDD workflow (writing Red-Green-Refactor commit messages, generating validation logic, debugging test failures).
-  * **GitHub Copilot:** Assisted in generating boilerplate code (DTOs, repository interfaces, test scaffolding).
-  * **Gemini:** Brainstormed API endpoint structures and helped refine database schema design.
-
-### How I Used Them
-
-  * I used ChatGPT to draft commit messages in the TDD cycle (Red-Green-Refactor), and for explanations when test failures occurred.
-  * I used Copilot inside IntelliJ for writing repetitive code (entity mappings, getter/setters, and mock setup in tests).
-  * I used Gemini early on to outline endpoints and service responsibilities before implementation.
-
-### Reflection
+## 📸 Application Screenshots
 📸 Screenshots
 
 <img width="1466" height="823" alt="image" src="https://github.com/user-attachments/assets/813041a7-ea9a-473e-a4c8-cee0803ba165" />
@@ -131,18 +140,52 @@ I used AI tools responsibly during development.
 <img width="801" height="643" alt="image" src="https://github.com/user-attachments/assets/adfa66e3-9b71-4da1-94ae-670cc27178ad" />
 <img width="1468" height="676" alt="image" src="https://github.com/user-attachments/assets/724ca6d0-ce94-4a7b-b18c-68f9b5e05708" />
 <img width="1452" height="848" alt="image" src="https://github.com/user-attachments/assets/beb4a22d-db0b-4ac3-946a-9fd6368043f7" />
+-----
 
+## 🤖 My AI Usage
 
-AI tools significantly improved my workflow by:
+I utilized various AI tools to enhance my development workflow and improve the quality of the project.
 
-  * Reducing time spent on boilerplate and setup.
-  * Helping me debug faster with clear explanations.
-  * Encouraging better discipline with TDD by structuring tests before writing logic.
+### Tools Used
 
-However, I carefully reviewed every suggestion, ensuring it aligned with clean coding practices and project requirements. AI served as a pair programmer, not a replacement for my reasoning.
+  * **GitHub Copilot:** For autocompleting code, generating boilerplate, and suggesting implementations for functions.
+  * **ChatGPT:** To brainstorm component structures, debug complex issues, and generate documentation.
+  * **Gemini:** For refining API logic, improving user experience, and creating professional documentation like this README.
+
+### How I Used Them
+
+  * I used **GitHub Copilot** extensively within my IDE to speed up the creation of React components, utility functions, and API service files. It was particularly helpful for writing repetitive code like form handling and state management logic.
+  * I turned to **ChatGPT** when I encountered challenging bugs or needed to explore different approaches for implementing features like filtering and searching on the dashboard. It also helped in writing clear and concise error messages for the UI.
+  * I leveraged **Gemini** to structure the overall project, design the API interactions in `src/lib/api.ts`, and generate a polished and professional `README.md` file that effectively communicates the project's features and setup.
+
+### Reflection
+
+AI tools were instrumental in accelerating the development process and allowing me to focus more on high-level architecture and user experience. They served as a powerful pair-programming partner, offering suggestions and solutions that I could adapt and integrate into the project. While AI provided a significant boost in productivity, I ensured that all generated code was thoroughly reviewed and tested to meet the project's quality standards.
 
 -----
 
-## 📝 License
+## 🧪 Test Report
 
-This project is open-source under the MIT License.
+The backend of this project follows TDD principles with a comprehensive suite of unit and integration tests.
+
+### Running Tests
+
+To run the test suite for the backend, use the following command:
+
+```sh
+./mvnw test
+```
+
+### Test Coverage
+
+The test suite includes:
+
+  * **Unit Tests:** These tests cover individual components in isolation.
+      * `SweetServiceTest.java`: Verifies the business logic for managing sweets, such as purchasing, stock validation, and creation.
+      * `UserServiceTest.java`: Ensures the user registration logic, including validation for existing users and missing fields, works correctly.
+  * **Integration Tests:** These tests cover the interaction between different parts of the application.
+      * `SweetIntegrationTest.java`: Tests the full flow of creating and retrieving sweets, including multipart image uploads with a mocked Cloudinary service.
+
+### Results
+
+All tests are designed to pass in a CI/CD environment, ensuring the reliability and stability of the backend application. The tests cover critical paths and business logic, providing confidence in the correctness of the implementation.
